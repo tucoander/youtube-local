@@ -45,7 +45,7 @@ python app.py
 4. Click a video to watch it with custom controls
 
 5. Use the buttons to delete or view video details
-
+```bash
 Project Structure
 📁 static/
 📁 templates/
@@ -54,7 +54,7 @@ Project Structure
 ├── requirements.txt
 ├── README.md
 └── LICENSE
-
+```
 📄 License
 
 This project is licensed under the terms of the https://./LICENSE
@@ -65,11 +65,11 @@ This project is intended for educational and personal use only. Using this softw
 
 The author is not responsible for any misuse of this code. By using this project, you agree to:
 
-    Use it only for legal and ethical purposes
+Use it only for legal and ethical purposes
 
-    Respect copyright and platform usage policies
+Respect copyright and platform usage policies
 
-    Take full responsibility for any content downloaded or processed with this software
+Take full responsibility for any content downloaded or processed with this software
 
 If you are a content owner and believe this project is being misused, please reach out so appropriate action can be taken.
 
