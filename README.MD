@@ -30,8 +30,9 @@ source venv/bin/activate  # macOS/Linux
 venv\Scripts\activate     # Windows
 ```
 
-```bash
+
 Run the application:
+```bash
 python app.py
 ```
 💻 Usage
@@ -45,8 +46,9 @@ python app.py
 4. Click a video to watch it with custom controls
 
 5. Use the buttons to delete or view video details
-```bash
+
 Project Structure
+```bash
 📁 static/
 📁 templates/
 📁 downloads/
