@@ -19,17 +19,21 @@ Um aplicativo simples e eficiente para baixar vídeos do YouTube, visualizar inf
 1. Clone este repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/tucoander/youtube-local.git
 cd seu-repositorio
+```
 
 (Optional) Create and activate a virtual environment:
+```bash
 python -m venv venv
 source venv/bin/activate  # macOS/Linux
 venv\Scripts\activate     # Windows
+```
 
+```bash
 Run the application:
 python app.py
-
+```
 💻 Usage
 
 1. Open your browser and go to http://localhost:5000
