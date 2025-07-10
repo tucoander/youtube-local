@@ -1,0 +1,19 @@
+<div class="sidebar">
+  <div class="logo">
+    <img src="/static/youtube-local.ico" alt="Logo" />
+  </div>
+  <nav class="menu">
+    <a href="/" class="{% if active == 'home' %}active{% endif %}" title="Home">
+      <i class="fa-solid fa-house"></i>
+    </a>
+    <a href="/galeria" class="{% if active == 'galeria' %}active{% endif %}" title="Galeria">
+      <i class="fa-solid fa-photo-film"></i>
+    </a>
+    <a href="/config" class="{% if active == 'config' %}active{% endif %}" title="Configurações">
+      <i class="fa-solid fa-gear"></i>
+    </a>
+    <a href="/sobre" class="{% if active == 'sobre' %}active{% endif %}" title="Sobre">
+      <i class="fa-solid fa-circle-info"></i>
+    </a>
+  </nav>
+</div>

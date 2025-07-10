@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Assistir vídeo</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #0f0f0f;
+        margin: 0;
+        font-family: "Roboto", sans-serif;
+        overflow: hidden;
+      }
+
+      .player-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 960px;
+        margin: 2rem auto;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        border-radius: 10px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+        max-height: calc(100vh - 4rem); /* nunca maior que a tela */
+      }
+
+      .player-wrapper video {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        transform: translate(-50%, -50%);
+        object-fit: contain;
+        background: #000;
+      }
+
+      video {
+        width: 100%;
+        height: auto;
+        display: block;
+        background: #000;
+      }
+
+      .control-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(20, 20, 20, 0.65);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+      }
+
+      .player-wrapper:hover .control-overlay {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .control-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin: 0 0.5rem;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+      }
+
+      .control-button svg {
+        fill: #fff;
+        width: 100%;
+        height: 100%;
+      }
+
+      .control-button:hover svg {
+        fill: #3ea6ff;
+        transform: scale(1.1);
+      }
+
+      .time-display {
+        font-size: 0.95rem;
+        color: #ccc;
+        margin-left: 1rem;
+        white-space: nowrap;
+      }
+
+      .volume-slider {
+        width: 100px;
+      }
+
+      .progress-bar {
+        position: relative;
+        flex-grow: 1;
+        height: 8px;
+        background: #444;
+        margin: 0 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #3ea6ff, #1ce783);
+        border-radius: 4px;
+        transition: width 0.2s ease;
+      }
+      .center-play-button,
+      .center-pause-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        width: 80px;
+        height: 80px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 2;
+        opacity: 1;
+      }
+
+      .center-play-button svg,
+      .center-pause-button svg {
+        fill: #fff;
+        width: 40px;
+        height: 40px;
+      }
+
+      .center-play-button.hidden,
+      .center-pause-button.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="player-wrapper">
+      <video id="video" autoplay>
+        <source
+          src="{{ url_for('video', video_id=video_id) }}"
+          type="video/mp4"
+        />
+        Seu navegador não suporta vídeo HTML5.
+      </video>
+      <!-- Botão de play central (antes de iniciar) -->
+      <div class="center-play-button" id="centerPlay" onclick="togglePlay()">
+        <svg viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"></path>
+        </svg>
+      </div>
+
+      <!-- Botão de pause central (hover durante reprodução) -->
+      <div
+        class="center-pause-button hidden"
+        id="centerPause"
+        onclick="togglePlay()"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
+        </svg>
+      </div>
+
+      <div class="control-overlay">
+        <!-- Botão Play/Pause SVG -->
+        <button
+          class="control-button"
+          onclick="togglePlay()"
+          title="Pausar/Reproduzir"
+        >
+          <svg id="play-icon" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"></path>
+          </svg>
+        </button>
+
+        <div class="progress-bar" onclick="seek(event)">
+          <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="time-display">
+          <span id="current-time">0:00</span> /
+          <span id="duration-time">0:00</span>
+        </div>
+
+        <input
+          type="range"
+          min="0"
+          max="100"
+          class="volume-slider"
+          onchange="setVolume(this.value)"
+          title="Volume"
+        />
+
+        <!-- Botão Tela cheia SVG -->
+        <button
+          class="control-button"
+          onclick="toggleFullScreen()"
+          title="Tela cheia"
+        >
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 4h2v5h-5v-2h3v-3zm-3-9v2h3v3h2V5h-5z"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const video = document.getElementById("video");
+      const playIcon = document.getElementById("play-icon");
+      const progress = document.getElementById("progress");
+      const volumeSlider = document.querySelector(".volume-slider");
+      const currentTimeDisplay = document.getElementById("current-time");
+      const durationTimeDisplay = document.getElementById("duration-time");
+
+      video.addEventListener("click", togglePlay);
+
+      function formatTime(time) {
+        const mins = Math.floor(time / 60);
+        const secs = Math.floor(time % 60);
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
+      }
+
+      const centerPlay = document.getElementById("centerPlay");
+      const centerPause = document.getElementById("centerPause");
+
+      function togglePlay() {
+        const centerButton = document.querySelector(".center-play-button");
+
+        if (video.paused) {
+          video.play();
+          playIcon.innerHTML =
+            '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>'; // pause icon
+          centerButton.classList.add("hidden");
+        } else {
+          video.pause();
+          playIcon.innerHTML = '<path d="M8 5v14l11-7z"></path>'; // play icon
+          centerButton.classList.remove("hidden");
+        }
+      }
+
+      // Oculta botão de play ao iniciar
+      video.addEventListener("play", () => {
+        centerPlay.classList.add("hidden");
+      });
+
+      // Mostra botão de play se pausar
+      video.addEventListener("pause", () => {
+        centerPlay.classList.remove("hidden");
+      });
+
+      // Mostra botão de pause ao passar o mouse enquanto o vídeo está tocando
+      video.addEventListener("mouseenter", () => {
+        if (!video.paused) {
+          centerPause.classList.remove("hidden");
+        }
+      });
+
+      video.addEventListener("mouseleave", () => {
+        centerPause.classList.add("hidden");
+      });
+
+      function setVolume(val) {
+        video.volume = val / 100;
+      }
+
+      function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+          video.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      video.addEventListener("loadedmetadata", () => {
+        durationTimeDisplay.textContent = formatTime(video.duration);
+      });
+
+      video.addEventListener("timeupdate", () => {
+        const percent = (video.currentTime / video.duration) * 100;
+        progress.style.width = `${percent}%`;
+        currentTimeDisplay.textContent = formatTime(video.currentTime);
+      });
+
+      function seek(e) {
+        const bar = e.currentTarget;
+        const clickX = e.offsetX;
+        const width = bar.offsetWidth;
+        const percent = clickX / width;
+        video.currentTime = percent * video.duration;
+      }
+
+      video.volume = 1;
+      volumeSlider.value = 100;
+    </script>
+  </body>
+</html>

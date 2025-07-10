@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Baixando vídeo...</title>
+  <style>
+    body {
+      background: #0f0f0f;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    .progress-bar {
+      width: 80%;
+      max-width: 600px;
+      height: 30px;
+      background: #333;
+      border-radius: 5px;
+      margin: 2rem auto;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #3ea6ff;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <h2>⏳ Baixando vídeo...</h2>
+  <div class="progress-bar">
+    <div class="progress-fill" id="fill"></div>
+  </div>
+  <p id="status">Iniciando...</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get("url");
+    const source = new EventSource(`/progresso?url=${encodeURIComponent(url)}`);
+
+    source.onmessage = function (event) {
+      const data = event.data;
+
+      if (data.startsWith("DONE::")) {
+        const videoId = data.split("::")[1];
+        window.location.href = `/assistir/${videoId}`;
+      } else if (data === "ERRO") {
+        document.getElementById("status").textContent = "Erro ao baixar vídeo.";
+        source.close();
+      } else {
+        document.getElementById("status").textContent = `Progresso: ${data}`;
+        const percent = parseFloat(data.replace("%", ""));
+        if (!isNaN(percent)) {
+          document.getElementById("fill").style.width = `${percent}%`;
+        }
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>🎞️ Galeria de Vídeos</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/sidebar.css" />
+    <link rel="stylesheet" href="/static/gallery.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      crossorigin="anonymous"
+    />
+    <style></style>
+  </head>
+
+  <body>
+    {% include '_sidebar.html' %}
+    <h1>🎬 Vídeos Baixados</h1>
+    <div class="grid">
+      {% for video in videos %}
+      <div class="card">
+        <div
+          class="preview-container"
+          onmouseenter="showPause(this)"
+          onmouseleave="hidePause(this)"
+          onclick="togglePreview(this)"
+        >
+          <div class="preview-wrapper">
+            <img
+              src="{{ video.thumbnail if video.thumbnail else url_for('static', filename='thumb-blank.png') }}"
+              alt="{{ video.title }}"
+              class="preview-image"
+            />
+            <video preload="metadata">
+              <source
+                src="{{ url_for('video', video_id=video.id) }}"
+                type="video/mp4"
+              />
+            </video>
+            <div class="center-play-button">
+              <i class="fa-solid fa-play"></i>
+            </div>
+            <div class="center-pause-button hidden">
+              <i class="fa-solid fa-pause"></i>
+            </div>
+            <div class="control-overlay">
+              <button
+                class="control-button"
+                onclick="togglePreview(this.closest('.preview-container'))"
+                title="Play/Pause"
+              >
+                <i class="fa-solid fa-play" style="color: white"></i>
+              </button>
+
+              <div class="progress-bar" onclick="seekPreview(event, this)">
+                <div class="progress-fill"></div>
+              </div>
+
+              <input
+                type="range"
+                min="0"
+                max="100"
+                class="volume-slider"
+                onchange="setPreviewVolume(this)"
+                onclick="event.stopPropagation()"
+                title="Volume"
+              />
+            </div>
+          </div>
+        </div>
+
+        <h3>{{ video.title }}</h3>
+        <p><strong>Canal:</strong> {{ video.channel }}</p>
+        <p><strong>Duração:</strong> {{ video.duration }} seg</p>
+        <div class="actions">
+          <a href="{{ url_for('assistir', video_id=video.id) }}">
+            <button class="icon-button">
+              <i class="fa-solid fa-play"></i>
+            </button>
+          </a>
+          <form
+            method="POST"
+            action="{{ url_for('deletar', video_id=video.id) }}"
+          >
+            <button class="icon-button" type="submit">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+  <script>
+    function togglePreview(container) {
+      const video = container.querySelector("video");
+      const img = container.querySelector("img");
+      const playBtn = container.querySelector(".center-play-button");
+      const pauseBtn = container.querySelector(".center-pause-button");
+      const icon = container.querySelector(".control-button i");
+
+      if (!video) return;
+
+      // Garante que o vídeo esteja visível
+      video.style.display = "block";
+      img.style.display = "none";
+
+      if (video.paused) {
+        video.play();
+        playBtn?.classList.add("hidden");
+        pauseBtn?.classList.remove("hidden");
+        if (icon) icon.className = "fa-solid fa-pause";
+      } else {
+        video.pause();
+        video.style.display = "none";
+        img.style.display = "block";
+        playBtn?.classList.remove("hidden");
+        pauseBtn?.classList.add("hidden");
+        if (icon) icon.className = "fa-solid fa-play";
+      }
+    }
+
+    function showPause(container) {
+      const pauseBtn = container.querySelector(".center-pause-button");
+      const video = container.querySelector("video");
+      if (pauseBtn && !video.paused) {
+        pauseBtn.classList.remove("hidden");
+      }
+    }
+
+    function hidePause(container) {
+      const pauseBtn = container.querySelector(".center-pause-button");
+      if (pauseBtn) {
+        pauseBtn.classList.add("hidden");
+      }
+    }
+    function setPreviewVolume(slider) {
+      const container = slider.closest(".preview-container");
+      const video = container.querySelector("video");
+      video.volume = slider.value / 100;
+    }
+
+    function seekPreview(event, bar) {
+      const container = bar.closest(".preview-container");
+      const video = container.querySelector("video");
+      const clickX = event.offsetX;
+      const width = bar.offsetWidth;
+      const percent = clickX / width;
+      video.currentTime = percent * video.duration;
+    }
+
+    document.querySelectorAll(".preview-container video").forEach((video) => {
+      const container = video.closest(".preview-container");
+      const progress = container.querySelector(".progress-fill");
+
+      video.addEventListener("timeupdate", () => {
+        const percent = (video.currentTime / video.duration) * 100;
+        if (progress) progress.style.width = `${percent}%`;
+      });
+
+      video.volume = 1;
+      const slider = container.querySelector(".volume-slider");
+      if (slider) slider.value = 100;
+    });
+  </script>
+</html>
