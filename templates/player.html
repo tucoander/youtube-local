@@ -7,6 +7,11 @@
       href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      crossorigin="anonymous"
+    />
     <style>
       body {
         background-color: #0f0f0f;
@@ -150,6 +155,22 @@
         pointer-events: none;
         transform: translate(-50%, -50%) scale(0.8);
       }
+      #galleryButton {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        padding: 0.5rem;
+        opacity: 1;
+        color: #ffffff;
+      }
+
+      #galleryButton:hover i {
+        color: #3ea6ff;
+        transform: scale(1.1);
+      }
+
+      #galleryButton i {
+        pointer-events: none;
+      }
     </style>
   </head>
   <body>
@@ -194,6 +215,15 @@
         <div class="progress-bar" onclick="seek(event)">
           <div class="progress-fill" id="progress"></div>
         </div>
+
+        <a
+          href="/galeria"
+          id="galleryButton"
+          class="control-button hidden"
+          title="Voltar para galeria"
+        >
+          <i class="fa-solid fa-photo-film"></i>
+        </a>
 
         <div class="time-display">
           <span id="current-time">0:00</span> /
